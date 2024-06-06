@@ -1,0 +1,506 @@
+[
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.373Z",
+    "_custom_field_data": {},
+    "name": "Secondary",
+    "color": "2196f3",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T14:35:54.087Z",
+    "last_updated": "2024-06-06T14:35:54.087Z",
+    "_custom_field_data": {},
+    "name": "Administrative",
+    "color": "2196f3",
+    "description": "Unit plays an administrative role",
+    "weight": null,
+    "content_types": [
+      [
+        "extras",
+        "contactassociation"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.375Z",
+    "_custom_field_data": {},
+    "name": "VIP",
+    "color": "4caf50",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.378Z",
+    "_custom_field_data": {},
+    "name": "GLBP",
+    "color": "4caf50",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.379Z",
+    "_custom_field_data": {},
+    "name": "CARP",
+    "color": "4caf50",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.378Z",
+    "_custom_field_data": {},
+    "name": "HSRP",
+    "color": "4caf50",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.374Z",
+    "_custom_field_data": {},
+    "name": "Anycast",
+    "color": "ffc107",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.372Z",
+    "_custom_field_data": {},
+    "name": "Loopback",
+    "color": "9e9e9e",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T14:35:54.090Z",
+    "last_updated": "2024-06-06T14:35:54.090Z",
+    "_custom_field_data": {},
+    "name": "Billing",
+    "color": "4caf50",
+    "description": "Unit plays a billing role",
+    "weight": null,
+    "content_types": [
+      [
+        "extras",
+        "contactassociation"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T00:00:00Z",
+    "last_updated": "2024-06-06T14:35:24.377Z",
+    "_custom_field_data": {},
+    "name": "VRRP",
+    "color": "4caf50",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "ipam",
+        "ipaddress"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T14:35:54.092Z",
+    "last_updated": "2024-06-06T14:35:54.092Z",
+    "_custom_field_data": {},
+    "name": "Support",
+    "color": "ffeb3b",
+    "description": "Unit plays a support role",
+    "weight": null,
+    "content_types": [
+      [
+        "extras",
+        "contactassociation"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T14:35:54.094Z",
+    "last_updated": "2024-06-06T14:35:54.094Z",
+    "_custom_field_data": {},
+    "name": "On Site",
+    "color": "111111",
+    "description": "Unit plays an on site role",
+    "weight": null,
+    "content_types": [
+      [
+        "extras",
+        "contactassociation"
+      ]
+    ]
+  }
+},
+{
+  "model": "extras.role",
+  "fields": {
+    "created": "2024-06-06T14:51:50.899Z",
+    "last_updated": "2024-06-06T14:51:50.899Z",
+    "_custom_field_data": {},
+    "name": "Device",
+    "color": "9e9e9e",
+    "description": "",
+    "weight": null,
+    "content_types": [
+      [
+        "dcim",
+        "device"
+      ]
+    ]
+  }
+},
+{
+  "model": "dcim.locationtype",
+  "fields": {
+    "created": "2024-06-06T14:51:26.954Z",
+    "last_updated": "2024-06-06T14:51:26.954Z",
+    "_custom_field_data": {},
+    "parent": null,
+    "name": "Site",
+    "description": "",
+    "nestable": false,
+    "content_types": [
+      [
+        "dcim",
+        "device"
+      ]
+    ]
+  }
+},
+{
+  "model": "dcim.location",
+  "fields": {
+    "created": "2024-06-06T14:51:38.910Z",
+    "last_updated": "2024-06-06T14:51:38.910Z",
+    "_custom_field_data": {},
+    "parent": null,
+    "name": "Site",
+    "_name": "Site",
+    "location_type": [
+      "Site"
+    ],
+    "status": [
+      "Active"
+    ],
+    "tenant": null,
+    "description": "",
+    "facility": "",
+    "asn": null,
+    "time_zone": null,
+    "physical_address": "",
+    "shipping_address": "",
+    "latitude": null,
+    "longitude": null,
+    "contact_name": "",
+    "contact_phone": "",
+    "contact_email": "",
+    "comments": ""
+  }
+},
+{
+  "model": "dcim.manufacturer",
+  "fields": {
+    "created": "2024-06-06T14:49:54.064Z",
+    "last_updated": "2024-06-06T14:49:54.064Z",
+    "_custom_field_data": {},
+    "name": "Manufacturer",
+    "description": ""
+  }
+},
+{
+  "model": "dcim.devicetype",
+  "fields": {
+    "created": "2024-06-06T14:50:07.590Z",
+    "last_updated": "2024-06-06T14:50:07.590Z",
+    "_custom_field_data": {},
+    "manufacturer": [
+      "Manufacturer"
+    ],
+    "device_family": null,
+    "model": "Model",
+    "part_number": "",
+    "u_height": 1,
+    "is_full_depth": true,
+    "subdevice_role": "",
+    "front_image": "",
+    "rear_image": "",
+    "comments": ""
+  }
+},
+{
+  "model": "dcim.interfacetemplate",
+  "fields": {
+    "created": "2024-06-06T14:50:35.228Z",
+    "last_updated": "2024-06-06T14:50:35.228Z",
+    "_custom_field_data": {},
+    "device_type": [
+      "Manufacturer",
+      "Model"
+    ],
+    "name": "Interface",
+    "label": "Ethernet1",
+    "description": "",
+    "_name": "9999999999999999Interface..................",
+    "type": "1000base-t",
+    "mgmt_only": false
+  }
+},
+{
+  "model": "dcim.rearporttemplate",
+  "fields": {
+    "created": "2024-06-06T14:50:52.285Z",
+    "last_updated": "2024-06-06T14:50:52.285Z",
+    "_custom_field_data": {},
+    "device_type": [
+      "Manufacturer",
+      "Model"
+    ],
+    "name": "Rear Port",
+    "_name": "Rear Port",
+    "label": "",
+    "description": "",
+    "type": "other",
+    "positions": 1
+  }
+},
+{
+  "model": "dcim.frontporttemplate",
+  "fields": {
+    "created": "2024-06-06T14:51:07.027Z",
+    "last_updated": "2024-06-06T14:51:07.027Z",
+    "_custom_field_data": {},
+    "device_type": [
+      "Manufacturer",
+      "Model"
+    ],
+    "name": "Front Port",
+    "_name": "Front Port",
+    "label": "",
+    "description": "",
+    "type": "other",
+    "rear_port_template": [
+      "Manufacturer",
+      "Model",
+      "Rear Port"
+    ],
+    "rear_port_position": 1
+  }
+},
+{
+  "model": "dcim.device",
+  "fields": {
+    "created": "2024-06-06T14:52:19.079Z",
+    "last_updated": "2024-06-06T14:52:19.079Z",
+    "_custom_field_data": {},
+    "local_config_context_data": null,
+    "local_config_context_schema": null,
+    "local_config_context_data_owner_content_type": null,
+    "local_config_context_data_owner_object_id": null,
+    "device_type": [
+      "Manufacturer",
+      "Model"
+    ],
+    "status": [
+      "Active"
+    ],
+    "role": [
+      "Device"
+    ],
+    "tenant": null,
+    "platform": null,
+    "name": "device",
+    "_name": "device",
+    "serial": "",
+    "asset_tag": null,
+    "location": [
+      "Site"
+    ],
+    "rack": null,
+    "position": null,
+    "face": "",
+    "primary_ip4": null,
+    "primary_ip6": null,
+    "cluster": null,
+    "virtual_chassis": null,
+    "device_redundancy_group": null,
+    "device_redundancy_group_priority": null,
+    "software_version": null,
+    "vc_position": null,
+    "vc_priority": null,
+    "comments": "",
+    "secrets_group": null,
+    "controller_managed_device_group": null,
+    "software_image_files": []
+  }
+},
+{
+  "model": "dcim.interface",
+  "fields": {
+    "created": "2024-06-06T14:52:19.112Z",
+    "last_updated": "2024-06-06T14:52:19.112Z",
+    "_custom_field_data": {},
+    "device": [
+      "device",
+      null,
+      "Site"
+    ],
+    "name": "Interface",
+    "label": "Ethernet1",
+    "description": "",
+    "cable": null,
+    "_cable_peer_type": null,
+    "_cable_peer_id": null,
+    "_path": null,
+    "status": [
+      "Active"
+    ],
+    "enabled": true,
+    "mac_address": null,
+    "mtu": null,
+    "mode": "",
+    "parent_interface": null,
+    "bridge": null,
+    "_name": "9999999999999999Interface..................",
+    "lag": null,
+    "type": "1000base-t",
+    "mgmt_only": false,
+    "untagged_vlan": null,
+    "vrf": null,
+    "tagged_vlans": []
+  }
+},
+{
+  "model": "dcim.rearport",
+  "fields": {
+    "created": "2024-06-06T14:52:19.116Z",
+    "last_updated": "2024-06-06T14:52:19.116Z",
+    "_custom_field_data": {},
+    "device": [
+      "device",
+      null,
+      "Site"
+    ],
+    "name": "Rear Port",
+    "_name": "Rear Port",
+    "label": "",
+    "description": "",
+    "cable": null,
+    "_cable_peer_type": null,
+    "_cable_peer_id": null,
+    "type": "other",
+    "positions": 1
+  }
+},
+{
+  "model": "dcim.frontport",
+  "fields": {
+    "created": "2024-06-06T14:52:19.121Z",
+    "last_updated": "2024-06-06T14:52:19.121Z",
+    "_custom_field_data": {},
+    "device": [
+      "device",
+      null,
+      "Site"
+    ],
+    "name": "Front Port",
+    "_name": "Front Port",
+    "label": "",
+    "description": "",
+    "cable": null,
+    "_cable_peer_type": null,
+    "_cable_peer_id": null,
+    "type": "other",
+    "rear_port": [
+      "Rear Port",
+      "device",
+      null,
+      "Site"
+    ],
+    "rear_port_position": 1
+  }
+}
+]
