@@ -1,24 +1,17 @@
-"""Device Component Update.
-
-This job button will align devices with their device type. If a device
-type's component templates (interfaces, front/rear ports, power ports, etc) have
-changed then this job attempts to create the missing components on a device or
-set of devices. The job attempts to first find pre-existing components to be
-updated. If none are found then new components are created.
-"""
+"""Jobs for updating device components from device type templates."""
 
 from dataclasses import dataclass
 from operator import attrgetter
-from textwrap import dedent
 from typing import Iterable, Tuple
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Model
-
-from nautobot.apps.jobs import Job, JobButtonReceiver, MultiObjectVar, ObjectVar, register_jobs
+from nautobot.apps.jobs import Job, MultiObjectVar, ObjectVar, register_jobs
 from nautobot.apps.models import BaseModel
-from nautobot.dcim.models import DeviceType, Device
+from nautobot.dcim.models import Device, DeviceType
 from nautobot.extras.models import Status
+
+from jobs.base import BaseJob, BaseJobButton
 
 
 @dataclass
@@ -267,26 +260,31 @@ class UpdateDeviceFromTemplatesMixin:
                 template_update.update(self, device_type, device)
 
 
-job_name, _, job_description = dedent(__doc__).split("\n", 2)
-job_name = job_name.rstrip(".")
+class DeviceComponentUpdateButton(BaseJobButton, UpdateDeviceFromTemplatesMixin):
+    """Device Component Update.
 
-
-class UpdateDeviceFromTemplatesButton(JobButtonReceiver, UpdateDeviceFromTemplatesMixin):
-    """The job button entrypoint."""
+    This is a job button receiver that will call the Device Component Update job
+    when clicked from a device detail page.
+    """
 
     class Meta:  # noqa:D106
-        name = f"{job_name} (Job Button)"
-        description = "Run {job_name} from a button."
-        commit_default = True
         has_sensitive_variables = False
 
     def receive_job_button(self, obj: DeviceType):
         """Run the job when the button has been pushed."""
+        super().receive_job_button(obj)
         self.update_device_type(obj)
 
 
-class UpdateDeviceFromTemplates(Job, UpdateDeviceFromTemplatesMixin):
-    """The job form entrypoint."""
+class DeviceComponentUpdate(BaseJob, UpdateDeviceFromTemplatesMixin):
+    """Device Component Update.
+
+    This job will align devices with their device type. If a device
+    type's component templates (interfaces, front/rear ports, power ports, etc) have
+    changed then this job attempts to create the missing components on a device or
+    set of devices. The job attempts to first find pre-existing components to be
+    updated. If none are found then new components are created.
+    """
 
     device_type = ObjectVar(label="Device Type", model=DeviceType)
     devices = MultiObjectVar(
@@ -297,9 +295,6 @@ class UpdateDeviceFromTemplates(Job, UpdateDeviceFromTemplatesMixin):
     )
 
     class Meta:  # noqa:D106
-        name = job_name
-        description = job_description.strip()
-        commit_default = True
         has_sensitive_variables = False
 
     def run(self, device_type: DeviceType, devices: Iterable[Device]):
@@ -308,4 +303,4 @@ class UpdateDeviceFromTemplates(Job, UpdateDeviceFromTemplatesMixin):
 
 
 name = "Device Utilities"
-register_jobs(UpdateDeviceFromTemplates, UpdateDeviceFromTemplatesButton)
+register_jobs(DeviceComponentUpdate, DeviceComponentUpdateButton)

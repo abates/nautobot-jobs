@@ -49,7 +49,7 @@ namespace.configure(
     {
         "nautobot_jobs": {
             "nautobot_ver": "stable",
-            "project_name": "nautobot-jobs",
+            "project_name": "useful-nautobot-jobs",
             "python_ver": "3.11",
             "local": False,
             "compose_dir": os.path.join(os.path.dirname(__file__), "development"),
@@ -639,7 +639,7 @@ def autoformat(context):
         "output_format": "see https://docs.astral.sh/ruff/settings/#output-format",
     },
 )
-def ruff(context, action="lint", fix=False, output_format="text"):
+def ruff(context, action="lint", fix=False, output_format="concise"):
     """Run ruff to perform code formatting and/or linting."""
     if action != "lint":
         command = "ruff format"
@@ -651,7 +651,7 @@ def ruff(context, action="lint", fix=False, output_format="text"):
         command = "ruff check"
         if fix:
             command += " --fix"
-        command += f" --output-format {output_format} ."
+        command += f" --output-format={output_format} ."
         run_command(context, command)
 
 

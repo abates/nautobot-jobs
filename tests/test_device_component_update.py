@@ -10,10 +10,10 @@ from nautobot.dcim.models import (
     RearPort,
     RearPortTemplate,
 )
-
 from nautobot.extras.models import Status
 
 from ..device_component_update import FieldUpdate, TemplateUpdate
+
 
 class ComponentUpdateTestCase(TestCase):
     """Base test case with fixtures."""
