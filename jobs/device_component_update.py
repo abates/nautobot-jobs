@@ -11,7 +11,7 @@ from nautobot.apps.models import BaseModel
 from nautobot.dcim.models import Device, DeviceType
 from nautobot.extras.models import Status
 
-from jobs.base import BaseJob, BaseJobButton
+from .base import BaseJob, BaseJobButton
 
 
 @dataclass
