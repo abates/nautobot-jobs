@@ -28,29 +28,17 @@ python = ">=3.8,<3.12"
 nautobot = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
-bandit = "*"
-black = "*"
 coverage = "*"
-django-debug-toolbar = "*"
-flake8 = "*"
 invoke = "*"
-ipython = "*"
 pylint = "*"
 pylint-django = "*"
 pylint-nautobot = "*"
-ruff = "*"
+ruff = "0.5.5"
 yamllint = "*"
 toml = "*"
+# Python implementation of markdownlint
+pymarkdownlnt = "~0.9.30"
 Markdown = "*"
-# Rendering docs to HTML
-mkdocs = "1.5.2"
-# Material for MkDocs theme
-mkdocs-material = "9.1.15"
-# Render custom markdown for version added/changed/remove notes
-mkdocs-version-annotations = "1.0.0"
-# Automatic documentation from sources, for MkDocs
-mkdocstrings = "0.22.0"
-mkdocstrings-python = "1.5.2"
 to-json-schema = "*"
 jsonschema = "*"
 
@@ -70,9 +58,10 @@ no-docstring-rgx = "^(_|test_|Meta$)"
 [tool.pylint.messages_control]
 disable = """,
     line-too-long,
-    too-many-ancestors,
-    too-few-public-methods,
-    too-many-public-methods,
+    too-many-positional-arguments,
+    nb-warn-dunder-filter-field,
+    nb-no-search-function,
+    nb-no-char-filter-q,
 """
 
 [tool.pylint.miscellaneous]
@@ -84,7 +73,7 @@ notes = """,
 
 [tool.pylint-nautobot]
 supported_nautobot_versions = [
-    "2.1"
+    "2"
 ]
 
 [tool.ruff]
@@ -99,9 +88,6 @@ select = [
     "I",  # isort
 ]
 ignore = [
-    # Don't worry about missing docstrings on nested classes.
-    "D106",
-
     # warning: `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible.
     "D203", # 1 blank line required before class docstring
 
@@ -124,9 +110,20 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"jobs/tests/*" = [
+"nautobot_jobs/migrations/*" = [
+    "D",
+]
+"nautobot_jobs/tests/*" = [
     "D",
     "S"
+]
+
+[tool.coverage.run]
+disable_warnings = ["already-imported"]
+relative_files = true
+omit = [
+    # Skip Tests
+    "*/tests/*",
 ]
 
 [build-system]
