@@ -1,4 +1,5 @@
 """Base class for cleanup jobs."""
+
 import logging
 import textwrap
 
@@ -37,7 +38,8 @@ class JobDocumentation(type):
 
         if getattr(meta, "name", None) is None:
             # convert camel case class name to space separated
-            setattr(meta, "name", ("".join([c if c.islower() else " " + c  for c in self.__name__])).strip())
+            setattr(meta, "name", ("".join([c if c.islower() else " " + c for c in self.__name__])).strip())
+
 
 LOG_LEVEL_CHOICES = (
     (logging.DEBUG, "Debug"),
@@ -47,6 +49,7 @@ LOG_LEVEL_CHOICES = (
     (logging.FATAL, "Fatal"),
 )
 
+
 class BaseJob(Job, metaclass=JobDocumentation):
     """Base class for jobs."""
 
@@ -54,7 +57,7 @@ class BaseJob(Job, metaclass=JobDocumentation):
 
     def run(self, log_level: str, *args, **kwargs):
         """Set the logger level based on user input."""
-        self.logger.setLevel(log_level)
+        self.logger.setLevel(int(log_level))
 
 
 class BaseJobButton(JobButtonReceiver, metaclass=JobDocumentation):
