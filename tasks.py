@@ -938,7 +938,7 @@ def check_migrations(context):
 def unittest(  # noqa: PLR0913
     context,
     keepdb=False,
-    label="nautobot_jobs",
+    label="./jobs",
     failfast=False,
     buffer=True,
     pattern="",
