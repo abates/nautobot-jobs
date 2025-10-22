@@ -33,11 +33,11 @@ class JobDocumentation(type):
             except ValueError:
                 parsed_description = self.__doc__
             parsed_description = textwrap.dedent(parsed_description).strip()
-            meta.description = parsed_description
+            setattr(meta, "description", parsed_description)
 
         if getattr(meta, "name", None) is None:
             # convert camel case class name to space separated
-            meta.name = ("".join([c if c.islower() else " " + c  for c in self.__name__])).strip()
+            setattr(meta, "name", ("".join([c if c.islower() else " " + c  for c in self.__name__])).strip())
 
 LOG_LEVEL_CHOICES = (
     (logging.DEBUG, "Debug"),
@@ -52,7 +52,7 @@ class BaseJob(Job, metaclass=JobDocumentation):
 
     log_level = ChoiceVar(label="Log Level", choices=LOG_LEVEL_CHOICES, default=logging.INFO)
 
-    def run(self, log_level):
+    def run(self, log_level: str, *args, **kwargs):
         """Set the logger level based on user input."""
         self.logger.setLevel(log_level)
 
@@ -60,6 +60,6 @@ class BaseJob(Job, metaclass=JobDocumentation):
 class BaseJobButton(JobButtonReceiver, metaclass=JobDocumentation):
     """Base class for job button receivers."""
 
-    def receive_job_button(self, _):
+    def receive_job_button(self, obj):
         """Receive a job button click and set the logger to INFO."""
         self.logger.setLevel(logging.INFO)
