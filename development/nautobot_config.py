@@ -13,14 +13,6 @@ from nautobot.core.settings_funcs import is_truthy, parse_redis_connection
 DEBUG = is_truthy(os.getenv("NAUTOBOT_DEBUG", False))
 _TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
-if DEBUG and not _TESTING:
-    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda _request: True}
-
-    if "debug_toolbar" not in INSTALLED_APPS:  # noqa: F405
-        INSTALLED_APPS.append("debug_toolbar")  # noqa: F405
-    if "debug_toolbar.middleware.DebugToolbarMiddleware" not in MIDDLEWARE:  # noqa: F405
-        MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")  # noqa: F405
-
 #
 # Misc. settings
 #
