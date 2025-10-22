@@ -7,7 +7,7 @@ from django.db.models import Model, Q
 from nautobot.apps.jobs import MultiObjectVar, ObjectVar
 from nautobot.dcim.models import Device, DeviceType, Location
 
-from jobs.base import BaseJob, BaseJobButton
+from .base import BaseJob, BaseJobButton
 
 if TYPE_CHECKING:
     import logging
