@@ -1,16 +1,14 @@
 """An opinionated job to update device names."""
 
+import logging
 import re
-from typing import TYPE_CHECKING, Iterable
+from typing import Iterable
 
 from django.db.models import Model, Q
 from nautobot.apps.jobs import MultiObjectVar, ObjectVar
 from nautobot.dcim.models import Device, DeviceType, Location
 
 from .base import BaseJob, BaseJobButton
-
-if TYPE_CHECKING:
-    import logging
 
 
 class UpdateDeviceNamesMixin:
