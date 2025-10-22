@@ -96,6 +96,9 @@ class UpdateDeviceNames(BaseJob, UpdateDeviceNamesMixin):
         required=False,
     )
 
+    class Meta:  # noqa:D106
+        has_sensitive_variables = False
+
     def run(
         self,
         log_level: str,
