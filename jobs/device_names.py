@@ -2,9 +2,8 @@
 
 import logging
 import re
-from typing import Iterable
 
-from django.db.models import Model, Q
+from django.db.models import Model, Q, QuerySet
 from nautobot.apps.jobs import MultiObjectVar, ObjectVar, register_jobs
 from nautobot.dcim.models import Device, DeviceType, Location
 
@@ -35,12 +34,12 @@ class UpdateDeviceNamesMixin:
         self,
         location: Location | None,
         device_type: DeviceType | None,
-        devices: Iterable[Device] | None,
+        devices: list[Device] | QuerySet[Device] | None,
     ) -> None:
         """Execute the job to update device names."""
         self.logger.info("Starting device name update process...")
 
-        if devices is None:
+        if devices is None or len(devices) == 0:
             filter = Q()
             for field_name, constraint in [("location", location), ("device_type", device_type)]:
                 if constraint:
@@ -102,23 +101,12 @@ class UpdateDeviceNames(BaseJob, UpdateDeviceNamesMixin):
         log_level: str,
         location: Location | None,
         device_type: DeviceType | None,
-        devices: Iterable[Device] | None,
+        devices: QuerySet[Device] | None,
     ) -> None:
         """Execute the job to update device names."""
         super().run(log_level)
 
-        self.logger.info("Starting device name update process...")
-
-        if devices is None:
-            filter = Q()
-            for field_name, constraint in [("location", location), ("device_type", device_type)]:
-                if constraint:
-                    filter &= Q(**{field_name: constraint})
-            devices = Device.objects.filter(filter)
-
-        for device in devices:
-            self.update_device_name(device)
-        self.logger.info("Device name update process completed.")
+        self.update(location, device_type, devices)
 
 
 name = "Device Utilities"
