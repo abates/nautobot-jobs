@@ -5,7 +5,7 @@ import re
 from typing import Iterable
 
 from django.db.models import Model, Q
-from nautobot.apps.jobs import MultiObjectVar, ObjectVar
+from nautobot.apps.jobs import MultiObjectVar, ObjectVar, register_jobs
 from nautobot.dcim.models import Device, DeviceType, Location
 
 from .base import BaseJob, BaseJobButton
@@ -119,3 +119,7 @@ class UpdateDeviceNames(BaseJob, UpdateDeviceNamesMixin):
         for device in devices:
             self.update_device_name(device)
         self.logger.info("Device name update process completed.")
+
+
+name = "Device Utilities"
+register_jobs(UpdateDeviceNames, UpdateDeviceNamesButton)
