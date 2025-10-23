@@ -11,4 +11,8 @@
     "**/.venv/**": true
   },
   "ruff.nativeServer": "on",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportAttributeAccessIssue": "none",
+    "reportOptionalMemberAccess": "none"
+  }
 }
