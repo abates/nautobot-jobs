@@ -919,7 +919,7 @@ def unittest_coverage(context):
 @task
 def coverage_lcov(context):
     """Generate an LCOV coverage report."""
-    command = "coverage lcov -o lcov.info"
+    command = "coverage lcov -o /workspace/lcov.info"
 
     run_command(context, command)
 

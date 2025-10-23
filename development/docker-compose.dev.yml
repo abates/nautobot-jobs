@@ -12,6 +12,7 @@ services:
       - "./nautobot_config.py:/opt/nautobot/nautobot_config.py"
       - "../:/source"
       - "../jobs:/opt/nautobot/jobs"
+      - "../:/workspace:rw"
     healthcheck:
       interval: "30s"
       timeout: "10s"
@@ -27,6 +28,7 @@ services:
       - "./nautobot_config.py:/opt/nautobot/nautobot_config.py"
       - "../:/source"
       - "../jobs:/opt/nautobot/jobs"
+      - "../:/workspace:rw"
     healthcheck:
       test: ["CMD", "true"]  # Due to layering, disable: true won't work. Instead, change the test
   beat:
@@ -38,6 +40,7 @@ services:
       - "./nautobot_config.py:/opt/nautobot/nautobot_config.py"
       - "../:/source"
       - "../jobs:/opt/nautobot/jobs"
+      - "../:/workspace:rw"
 # To expose postgres or redis to the host uncomment the following
 # postgres:
 #   ports:
