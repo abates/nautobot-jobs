@@ -1,6 +1,5 @@
 """Unit tests for the device component update job."""
 
-from os import path
 from unittest.mock import Mock
 
 from nautobot.apps.testing import TestCase
@@ -23,7 +22,12 @@ from ..device_component_update import (
 class ComponentUpdateTestCase(TestCase):
     """Base test case with fixtures."""
 
-    fixtures = [path.join(path.dirname(__file__), "fixtures", "device_component_update.json")]
+    def setUp(self):
+        """Set up test data."""
+        super().setUp()
+        from .fixtures.device_component_update import add_fixtures
+
+        add_fixtures()
 
 
 class TestFieldUpdate(ComponentUpdateTestCase):
