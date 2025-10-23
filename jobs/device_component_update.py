@@ -23,9 +23,7 @@ class FieldUpdate(ABC):
     default_value: str | None = None
 
     @abstractmethod
-    def get_values(
-        self, dst_obj: Model, template_obj: Model | None
-    ) -> Tuple[object, object]:
+    def get_values(self, dst_obj: Model, template_obj: Model | None) -> Tuple[object, object]:
         """Get the old and new values for the destination object and template.
 
         Args:
@@ -44,11 +42,6 @@ class FieldUpdate(ABC):
         Raises:
             ValueError: If no template_obj is set and the FieldUpdate has no default value.
         """
-        if self.default_value is None and template_obj is None:
-            raise ValueError(
-                "Template object must be set when no default value is provided"
-            )
-
         old_value, new_value = self.get_values(dst_obj, template_obj)
         if old_value != new_value:
             setattr(dst_obj, self.name, new_value)
@@ -69,9 +62,7 @@ class SimpleFieldUpdate(FieldUpdate):
     name: str
     default_value: str | None = None
 
-    def get_values(
-        self, dst_obj: Model, template_obj: Model | None
-    ) -> Tuple[Model | None, str | None]:
+    def get_values(self, dst_obj: Model, template_obj: Model | None) -> Tuple[Model | None, str | None]:
         """Get the old and new values for the destination object and template."""
         old_value = getattr(dst_obj, self.name)
         if self.default_value is None:
@@ -105,9 +96,7 @@ class RelationshipFieldUpdate(FieldUpdate):
     default_value: str | None = None
     template_name: str | None = None
 
-    def get_values(
-        self, dst_obj: Model, template_obj: Model | None
-    ) -> Tuple[Model | None, str | None]:
+    def get_values(self, dst_obj: Model, template_obj: Model | None) -> Tuple[Model | None, str | None]:
         """Get the old and new values for the destination object and template.
 
         Args:
@@ -130,9 +119,7 @@ class RelationshipFieldUpdate(FieldUpdate):
             old_value = None
         new_value = None
         if self.default_value is None:
-            new_key = getattr(
-                getattr(template_obj, self.template_name or self.name), self.key_field
-            )
+            new_key = getattr(getattr(template_obj, self.template_name or self.name), self.key_field)
             new_value = query_manager.get(**{self.key_field: new_key})
         elif dst_obj._state.adding:
             new_value = query_manager.get(**{self.key_field: self.default_value})
@@ -196,9 +183,7 @@ class TemplateUpdate:
                 field = device._meta.get_field(self.dst)
                 dst_obj = dst.model()
                 setattr(dst_obj, getattr(field.remote_field, "name"), device)
-                job.logger.info(
-                    "Created %s", dst_obj.__class__.__name__, extra={"object": device}
-                )
+                job.logger.info("Created %s", dst_obj.__class__.__name__, extra={"object": device})
 
             for field in self.fields:
                 field.update(job, dst_obj, template_obj)
@@ -289,15 +274,11 @@ class UpdateDeviceFromTemplatesMixin:
 
     logger: logging.Logger
 
-    def update_device_type(
-        self, device_type: DeviceType, devices: Iterable[Device] = []
-    ):
+    def update_device_type(self, device_type: DeviceType, devices: Iterable[Device] = []):
         """Update a list of devices so their components match the device type's templates."""
         if not devices:
             devices = Device.objects.filter(device_type=device_type)
-        self.logger.info(
-            "Updating devices from %s", device_type, extra={"object": device_type}
-        )
+        self.logger.info("Updating devices from %s", device_type, extra={"object": device_type})
         for device in devices:
             self.logger.info("Updating %s", device, extra={"object": device})
             for template_update in TEMPLATE_UPDATES:
