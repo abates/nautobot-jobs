@@ -1,11 +1,13 @@
 """Jobs for updating device components from device type templates."""
 
-from dataclasses import dataclass
+import logging
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from operator import attrgetter
 from typing import Iterable, Tuple
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db.models import Model
+from django.db.models import Manager, Model
 from nautobot.apps.jobs import Job, MultiObjectVar, ObjectVar, register_jobs
 from nautobot.apps.models import BaseModel
 from nautobot.dcim.models import Device, DeviceType
@@ -14,16 +16,74 @@ from nautobot.extras.models import Status
 from .base import BaseJob, BaseJobButton
 
 
+class FieldUpdate(ABC):
+    """FieldUpdate specifies how to find and update a template's fields."""
+
+    name: str
+    default_value: str | None = None
+
+    @abstractmethod
+    def get_values(
+        self, dst_obj: Model, template_obj: Model | None
+    ) -> Tuple[object, object]:
+        """Get the old and new values for the destination object and template.
+
+        Args:
+            dst_obj (Model): The object that is being updated.
+            template_obj (Model): The template to update from.
+        """
+
+    def update(self, job: Job, dst_obj: Model, template_obj: Model):
+        """Update the field on the destination object.
+
+        Args:
+            job (Job): The job this update is being executed from. This is used for logging.
+            dst_obj (Model): The object receiving the updates.
+            template_obj (Model, optional): The template to align the destination object with. Defaults to None.
+
+        Raises:
+            ValueError: If no template_obj is set and the FieldUpdate has no default value.
+        """
+        if self.default_value is None and template_obj is None:
+            raise ValueError(
+                "Template object must be set when no default value is provided"
+            )
+
+        old_value, new_value = self.get_values(dst_obj, template_obj)
+        if old_value != new_value:
+            setattr(dst_obj, self.name, new_value)
+            if not dst_obj._state.adding:
+                job.logger.info(
+                    "Updated %s from %s to %s",
+                    self.name,
+                    old_value,
+                    new_value,
+                    extra={"object": dst_obj},
+                )
+
+
 @dataclass
-class FieldUpdate:
-    """FieldUpdate specifies how to find and update a template's fields.
+class SimpleFieldUpdate(FieldUpdate):
+    """A field that can be updated directly, without querying from a relationship manager."""
+
+    name: str
+    default_value: str | None = None
+
+    def get_values(
+        self, dst_obj: Model, template_obj: Model | None
+    ) -> Tuple[Model | None, str | None]:
+        """Get the old and new values for the destination object and template."""
+        old_value = getattr(dst_obj, self.name)
+        if self.default_value is None:
+            return old_value, getattr(template_obj, self.name)
+        return old_value, self.default_value
+
+
+@dataclass
+class RelationshipFieldUpdate(FieldUpdate):
+    """RelationshipFieldUpdate specifies how to find and update a template's fields.
 
     Attributes:
-        name (str): The field name, e.g. `type` for an interface template.
-
-        default_value (Any): The value to assign if the receiver's field is None. If not set (None)
-            then the value must be supplied by the `template_obj` argument to `update`.
-
         key_field (str): If the field is a relationship, then `key_field` is used for perform the
             query to find the object to assign to the field. For instance, when assigning a `Status`
             object, the `name` field may be used to find the correct status.
@@ -38,13 +98,16 @@ class FieldUpdate:
             is then used to look for a rear port matching the key field.
     """
 
-    name: str
-    template_name: str = None
-    default_value: str = None
-    key_field: str = None
-    query_from: str = None
+    query_from: str | Manager
+    key_field: str
 
-    def get_values(self, dst_obj: Model, template_obj: Model) -> Tuple[Model, Model]:
+    name: str
+    default_value: str | None = None
+    template_name: str | None = None
+
+    def get_values(
+        self, dst_obj: Model, template_obj: Model | None
+    ) -> Tuple[Model | None, str | None]:
         """Get the old and new values for the destination object and template.
 
         Args:
@@ -55,15 +118,6 @@ class FieldUpdate:
             Tuple[Model, Model]: The value of the field for the existing object (dst_obj) and
                 the value of the field for the template.
         """
-        if self.key_field is None:
-            # Field can be set directly
-            old_value = getattr(dst_obj, self.name)
-            if self.default_value is None:
-                return old_value, getattr(template_obj, self.name)
-            return old_value, self.default_value
-
-        # Field is a related field and a lookup
-        # must be done first
         if isinstance(self.query_from, str):
             query_manager = attrgetter(self.query_from)(dst_obj)
         else:
@@ -76,7 +130,9 @@ class FieldUpdate:
             old_value = None
         new_value = None
         if self.default_value is None:
-            new_key = getattr(getattr(template_obj, self.template_name or self.name), self.key_field)
+            new_key = getattr(
+                getattr(template_obj, self.template_name or self.name), self.key_field
+            )
             new_value = query_manager.get(**{self.key_field: new_key})
         elif dst_obj._state.adding:
             new_value = query_manager.get(**{self.key_field: self.default_value})
@@ -85,26 +141,6 @@ class FieldUpdate:
             new_value = old_value
 
         return old_value, new_value
-
-    def update(self, job: Job, dst_obj: Model, template_obj: Model = None):
-        """Update the field on the destination object.
-
-        Args:
-            job (Job): The job this update is being executed from. This is used for logging.
-            dst_obj (Model): The object receiving the updates.
-            template_obj (Model, optional): The template to align the destination object with. Defaults to None.
-
-        Raises:
-            ValueError: If no template_obj is set and the FieldUpdate has no default value.
-        """
-        if self.default_value is None and template_obj is None:
-            raise ValueError("Template object must be set when no default value is provided")
-
-        old_value, new_value = self.get_values(dst_obj, template_obj)
-        if old_value != new_value:
-            setattr(dst_obj, self.name, new_value)
-            if not dst_obj._state.adding:
-                job.logger.info("Updated %s from %s to %s", self.name, old_value, new_value, extra={"object": dst_obj})
 
 
 @dataclass
@@ -123,13 +159,14 @@ class TemplateUpdate:
     src: str
     dst: str
     key_field: str
-    fields: list[FieldUpdate]
+    fields: list[FieldUpdate] = field(default_factory=list)
+    exclude_default_fields: set[str] = field(default_factory=set)
 
     def __post_init__(self):
-        """Create field lookups where the field is a simple string name."""
-        for i, field in enumerate(self.fields):
-            if isinstance(field, str):
-                self.fields[i] = FieldUpdate(name=field)
+        """Add default fields."""
+        for field_name in ["name", "label", "type"]:
+            if field_name not in self.exclude_default_fields:
+                self.fields.insert(0, SimpleFieldUpdate(field_name))
 
     def update(self, job: Job, device_type: DeviceType, device: Device):
         """Perform the update of the field.
@@ -158,8 +195,10 @@ class TemplateUpdate:
             except ObjectDoesNotExist:
                 field = device._meta.get_field(self.dst)
                 dst_obj = dst.model()
-                setattr(dst_obj, field.remote_field.name, device)
-                job.logger.info("Created %s", dst_obj.__class__.__name__, extra={"object": device})
+                setattr(dst_obj, getattr(field.remote_field, "name"), device)
+                job.logger.info(
+                    "Created %s", dst_obj.__class__.__name__, extra={"object": device}
+                )
 
             for field in self.fields:
                 field.update(job, dst_obj, template_obj)
@@ -176,29 +215,30 @@ TEMPLATE_UPDATES = [
         dst="interfaces",
         key_field="name",
         fields=[
-            "name",
-            "label",
-            "type",
-            "mgmt_only",
-            FieldUpdate(name="status", key_field="name", default_value="Active", query_from=Status.objects),
+            SimpleFieldUpdate("mgmt_only"),
+            RelationshipFieldUpdate(
+                name="status",
+                key_field="name",
+                default_value="Active",
+                query_from=Status.objects,
+            ),
         ],
     ),
     TemplateUpdate(
         src="rear_port_templates",
         dst="rear_ports",
         key_field="name",
-        fields=["name", "label", "type"],
     ),
     TemplateUpdate(
         src="front_port_templates",
         dst="front_ports",
         key_field="name",
         fields=[
-            "name",
-            "label",
-            "type",
-            FieldUpdate(
-                name="rear_port", template_name="rear_port_template", key_field="name", query_from="device.rear_ports"
+            RelationshipFieldUpdate(
+                name="rear_port",
+                template_name="rear_port_template",
+                key_field="name",
+                query_from="device.rear_ports",
             ),
         ],
     ),
@@ -206,42 +246,40 @@ TEMPLATE_UPDATES = [
         src="console_port_templates",
         dst="console_ports",
         key_field="name",
-        fields=["name", "label", "type"],
     ),
     TemplateUpdate(
         src="console_server_port_templates",
         dst="console_server_ports",
         key_field="name",
-        fields=["name", "label", "type"],
     ),
     TemplateUpdate(
         src="power_port_templates",
         dst="power_ports",
         key_field="name",
-        fields=["name", "label", "type", "maximum_draw", "allocated_draw"],
+        fields=[
+            SimpleFieldUpdate("maximum_draw"),
+            SimpleFieldUpdate("allocated_draw"),
+        ],
     ),
     TemplateUpdate(
         src="power_outlet_templates",
         dst="power_outlets",
         key_field="name",
         fields=[
-            "name",
-            "label",
-            "type",
-            FieldUpdate(
+            RelationshipFieldUpdate(
                 name="power_port",
                 template_name="power_port_template",
                 key_field="name",
                 query_from="device.power_ports",
             ),
-            "feed_leg",
+            SimpleFieldUpdate("feed_leg"),
         ],
     ),
     TemplateUpdate(
         src="device_bay_templates",
         dst="device_bays",
         key_field="name",
-        fields=["name", "label"],
+        exclude_default_fields={"type"},
     ),
 ]
 
@@ -249,15 +287,21 @@ TEMPLATE_UPDATES = [
 class UpdateDeviceFromTemplatesMixin:
     """Common code for both the button receiver and the job entrypoint."""
 
-    def update_device_type(self, device_type: DeviceType, devices: Iterable[Device] = []):
+    logger: logging.Logger
+
+    def update_device_type(
+        self, device_type: DeviceType, devices: Iterable[Device] = []
+    ):
         """Update a list of devices so their components match the device type's templates."""
         if not devices:
-            devices = device_type.devices.all()
-        self.logger.info("Updating devices from %s", device_type, extra={"object": device_type})
+            devices = Device.objects.filter(device_type=device_type)
+        self.logger.info(
+            "Updating devices from %s", device_type, extra={"object": device_type}
+        )
         for device in devices:
             self.logger.info("Updating %s", device, extra={"object": device})
             for template_update in TEMPLATE_UPDATES:
-                template_update.update(self, device_type, device)
+                template_update.update(self, device_type, device)  # type: ignore
 
 
 class DeviceComponentUpdateButton(BaseJobButton, UpdateDeviceFromTemplatesMixin):
@@ -297,8 +341,9 @@ class DeviceComponentUpdate(BaseJob, UpdateDeviceFromTemplatesMixin):
     class Meta:  # noqa:D106
         has_sensitive_variables = False
 
-    def run(self, device_type: DeviceType, devices: Iterable[Device]):
+    def run(self, log_level: str, device_type: DeviceType, devices: Iterable[Device]):
         """Perform the update for the provided set of devices."""
+        super().run(log_level)
         self.update_device_type(device_type, devices)
 
 
