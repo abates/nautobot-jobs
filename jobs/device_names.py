@@ -19,7 +19,7 @@ class UpdateDeviceNamesMixin:
         """Update the device name based on the naming convention."""
         match = re.search(r"(\d+)$", device.name)
         if not match:
-            self.logger.warning(f"Device '{device.name}' does not end with a digit. Skipping.")
+            self.logger.warning(f"Device '{device.name}' does not end with digits. Skipping.")
             return
 
         device_index = match.group(1)
@@ -64,13 +64,11 @@ class UpdateDeviceNamesButton(BaseJobButton, UpdateDeviceNamesMixin):
     def receive_job_button(self, obj: Model):
         """Run the job when the button has been pushed."""
         super().receive_job_button(obj)
-        kwargs = {}
-        if isinstance(obj, Device):
-            kwargs["devices"] = [obj]
-        elif isinstance(obj, Location):
-            kwargs["location"] = obj
-        elif isinstance(obj, DeviceType):
-            kwargs["device_type"] = obj
+        kwargs = {
+            "devices": [obj] if isinstance(obj, Device) else None,
+            "location": obj if isinstance(obj, Location) else None,
+            "device_type": obj if isinstance(obj, DeviceType) else None,
+        }
         self.update(**kwargs)
 
 
@@ -82,7 +80,9 @@ class UpdateDeviceNames(BaseJob, UpdateDeviceNamesMixin):
     consistent and follow organizational standards.
 
     The naming convention is as follows:
-    [Location Name]-[Device Role][digit]
+    [Location Name]-[Device Role][digits]
+
+    If an existing device name does not include trailing digits, it will be skipped.
     """
 
     location = ObjectVar(label="Location", model=Location, required=False)
@@ -101,7 +101,7 @@ class UpdateDeviceNames(BaseJob, UpdateDeviceNamesMixin):
 
     def run(
         self,
-        log_level: str,
+        log_level: int,
         location: Location | None,
         device_type: DeviceType | None,
         devices: QuerySet[Device] | None,
