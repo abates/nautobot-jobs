@@ -55,7 +55,7 @@ class BaseJob(Job, metaclass=JobDocumentation):
 
     log_level = ChoiceVar(label="Log Level", choices=LOG_LEVEL_CHOICES, default=logging.INFO)
 
-    def run(self, log_level: str, *args, **kwargs):
+    def run(self, log_level: int, *args, **kwargs):
         """Set the logger level based on user input."""
         self.logger.setLevel(int(log_level))
 
