@@ -165,7 +165,7 @@ def run_command(context, command, service="nautobot", **kwargs):
         docker_compose_status = "ps --services --filter status=running"
         results = docker_compose(context, docker_compose_status, hide="out")
 
-        command_env_args = ""
+        command_env_args = " -w /workspace"
         if "command_env" in kwargs:
             command_env = kwargs.pop("command_env")
             for key, value in command_env.items():
@@ -919,7 +919,7 @@ def unittest_coverage(context):
 @task
 def coverage_lcov(context):
     """Generate an LCOV coverage report."""
-    command = "coverage lcov -o /workspace/lcov.info"
+    command = "coverage lcov -o lcov.info"
 
     run_command(context, command)
 
