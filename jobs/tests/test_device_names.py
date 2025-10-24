@@ -79,13 +79,11 @@ class TestUpdateDeviceNamesJob(DeviceNamesTestCase):
         self.job.run(log_level=logging.INFO, location=None, device_type=None, devices=devices)
 
         for device in Device.objects.filter(query):
-            print("Checking device:", device.name)
             location = device.location
             self.assertRegex(device.name, f"^{location.name}-SW\\d+$")
 
         # make sure other devices were not updated
         for device in Device.objects.exclude(query):
-            print("Again device:", device.name)
             location = device.location
             self.assertFalse(re.match(f"^{location.name}-SW\\d+$", device.name))
 

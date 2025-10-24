@@ -198,6 +198,5 @@ class TestTemplateUpdate(ComponentUpdateTestCase):
         template_update.update(job_mock, device)  # type: ignore
         self.assertRaises(Interface.DoesNotExist, device.interfaces.get, name=template.name)
         last_log = job_mock.logger.info.mock_calls[-1]
-        print(last_log)
         self.assertTrue(last_log.args[0].startswith("Validation failed"))
         self.assertEqual(last_log.kwargs["extra"]["object"].name, "Interface")

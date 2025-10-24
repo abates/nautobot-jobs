@@ -18,7 +18,6 @@ class UpdateDeviceNamesMixin(UpdateMixin[Device]):
 
     def update_object(self, object: Device) -> None:
         """Update the device name based on the naming convention."""
-        print(f"Updating {object.name}")
         match = re.search(r"(\d+)$", object.name)
         if not match:
             self.logger.warning(f"Device '{object.name}' does not end with digits. Skipping.")
