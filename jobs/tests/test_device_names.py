@@ -13,7 +13,7 @@ from nautobot.dcim.models import (
 )
 
 from ..device_names import UpdateDeviceNames, UpdateDeviceNamesButton
-from .fixtures.device_names import add_fixtures
+from .fixtures import add_device, add_device_type, add_location, add_location_type, add_role
 
 
 class DeviceNamesTestCase(TestCase):
@@ -22,7 +22,19 @@ class DeviceNamesTestCase(TestCase):
     def setUp(self):
         """Set up test data."""
         super().setUp()
-        add_fixtures()
+        role = add_role("SW", Device)
+        location_type = add_location_type("Site", [Device])
+        location1 = add_location("S1", location_type)
+        location2 = add_location("S2", location_type)
+
+        device_type1 = add_device_type("Manufacturer", "Model 1")
+        device_type2 = add_device_type("Manufacturer", "Model 2")
+
+        add_device("device 1", device_type1, location1, role)
+        add_device("device 2", device_type2, location1, role)
+        add_device("device 3", device_type1, location2, role)
+        add_device("device 4", device_type2, location2, role)
+        add_device("device abc", device_type2, location2, role)
 
 
 class TestUpdateDeviceNamesJob(DeviceNamesTestCase):
@@ -95,34 +107,34 @@ class TestUpdateDeviceNamesButton(DeviceNamesTestCase):
         """Set up test data."""
         super().setUp()
         self.button = UpdateDeviceNamesButton()
-        self.button.update = Mock()
+        self.button.update_objects = Mock()
 
     def test_device_provided(self):
         """Confirm that providing a device calls the job with that device."""
         device = Device.objects.get(name="device 1")
         self.button.receive_job_button(device)
-        self.button.update.assert_called_once_with(
+        self.button.update_objects.assert_called_once_with(
+            objects=device,
             location=None,
             device_type=None,
-            devices=[device],
         )
 
     def test_device_type_provided(self):
         """Confirm that providing a device calls the job with that device."""
         device_type = DeviceType.objects.get(model="Model 1")
         self.button.receive_job_button(device_type)
-        self.button.update.assert_called_once_with(
+        self.button.update_objects.assert_called_once_with(
+            objects=None,
             location=None,
             device_type=device_type,
-            devices=None,
         )
 
     def test_location_type_provided(self):
         """Confirm that providing a device calls the job with that device."""
         location = Location.objects.get(name="S1")
         self.button.receive_job_button(location)
-        self.button.update.assert_called_once_with(
+        self.button.update_objects.assert_called_once_with(
+            objects=None,
             location=location,
             device_type=None,
-            devices=None,
         )

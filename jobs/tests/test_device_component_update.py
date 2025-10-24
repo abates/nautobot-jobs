@@ -17,6 +17,15 @@ from ..device_component_update import (
     SimpleFieldUpdate,
     TemplateUpdate,
 )
+from .fixtures import (
+    add_device,
+    add_device_type,
+    add_front_port_template,
+    add_interface_template,
+    add_location,
+    add_location_type,
+    add_role,
+)
 
 
 class ComponentUpdateTestCase(TestCase):
@@ -25,9 +34,14 @@ class ComponentUpdateTestCase(TestCase):
     def setUp(self):
         """Set up test data."""
         super().setUp()
-        from .fixtures.device_component_update import add_fixtures
+        role = add_role("Device", Device)
+        location_type = add_location_type("Site", [Device])
+        location = add_location("Site", location_type)
+        device_type = add_device_type("Manufacturer", "Model")
+        add_interface_template("Interface", device_type, label="Ethernet1")
+        add_front_port_template("Front Port", "Rear Port", device_type)
 
-        add_fixtures()
+        add_device("device", device_type, location, role)
 
 
 class TestFieldUpdate(ComponentUpdateTestCase):
@@ -156,7 +170,7 @@ class TestTemplateUpdate(ComponentUpdateTestCase):
         device.interfaces.get(name=template.name).delete()
         self.assertRaises(Interface.DoesNotExist, device.interfaces.get, name=template.name)
         job_mock = Mock()
-        template_update.update(job_mock, device_type, device)  # type: ignore
+        template_update.update(job_mock, device)  # type: ignore
 
         class PrefixStr(str):
             def __eq__(self, other: object):
@@ -181,7 +195,7 @@ class TestTemplateUpdate(ComponentUpdateTestCase):
         device.interfaces.get(name=template.name).delete()
         self.assertRaises(Interface.DoesNotExist, device.interfaces.get, name=template.name)
         job_mock = Mock()
-        template_update.update(job_mock, device_type, device)  # type: ignore
+        template_update.update(job_mock, device)  # type: ignore
         self.assertRaises(Interface.DoesNotExist, device.interfaces.get, name=template.name)
         last_log = job_mock.logger.info.mock_calls[-1]
         print(last_log)

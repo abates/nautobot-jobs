@@ -3,52 +3,34 @@
 import logging
 import re
 
-from django.db.models import Model, Q, QuerySet
-from nautobot.apps.jobs import MultiObjectVar, ObjectVar, register_jobs
+from nautobot.apps.jobs import register_jobs
 from nautobot.dcim.models import Device, DeviceType, Location
 
-from .base import BaseJob, BaseJobButton
+from .base import BaseJob, BaseJobButton, DeviceSelectJobMixin, UpdateMixin
+from .util import filter_kwargs
 
 
-class UpdateDeviceNamesMixin:
+class UpdateDeviceNamesMixin(UpdateMixin[Device]):
     """Mixin class containing the device name update logic."""
 
     logger: logging.Logger
+    update_type = Device
 
-    def update_device_name(self, device: Device) -> None:
+    def update_object(self, object: Device) -> None:
         """Update the device name based on the naming convention."""
-        match = re.search(r"(\d+)$", device.name)
+        print(f"Updating {object.name}")
+        match = re.search(r"(\d+)$", object.name)
         if not match:
-            self.logger.warning(f"Device '{device.name}' does not end with digits. Skipping.")
+            self.logger.warning(f"Device '{object.name}' does not end with digits. Skipping.")
             return
 
         device_index = match.group(1)
-        new_name = f"{device.location.name}-{device.role.name}{device_index}"
+        new_name = f"{object.location.name}-{object.role.name}{device_index}"
 
-        if device.name != new_name:
-            self.logger.info(f"Updating device '{device.name}' to '{new_name}'")
-            device.name = new_name
-            device.save()
-
-    def update(
-        self,
-        location: Location | None,
-        device_type: DeviceType | None,
-        devices: list[Device] | QuerySet[Device] | None,
-    ) -> None:
-        """Execute the job to update device names."""
-        self.logger.info("Starting device name update process...")
-
-        if devices is None or len(devices) == 0:
-            filter = Q()
-            for field_name, constraint in [("location", location), ("device_type", device_type)]:
-                if constraint:
-                    filter &= Q(**{field_name: constraint})
-            devices = Device.objects.filter(filter)
-
-        for device in devices:
-            self.update_device_name(device)
-        self.logger.info("Device name update process completed.")
+        if object.name != new_name:
+            self.logger.info(f"Updating device '{object.name}' to '{new_name}'")
+            object.name = new_name
+            object.save()
 
 
 class UpdateDeviceNamesButton(BaseJobButton, UpdateDeviceNamesMixin):
@@ -61,18 +43,14 @@ class UpdateDeviceNamesButton(BaseJobButton, UpdateDeviceNamesMixin):
     class Meta:  # noqa:D106
         has_sensitive_variables = False
 
-    def receive_job_button(self, obj: Model):
+    def receive_job_button(self, obj: Device | DeviceType | Location):
         """Run the job when the button has been pushed."""
         super().receive_job_button(obj)
-        kwargs = {
-            "devices": [obj] if isinstance(obj, Device) else None,
-            "location": obj if isinstance(obj, Location) else None,
-            "device_type": obj if isinstance(obj, DeviceType) else None,
-        }
-        self.update(**kwargs)
+        kwargs = filter_kwargs(obj, objects=Device, location=Location, device_type=DeviceType)
+        self.update_objects(**kwargs)
 
 
-class UpdateDeviceNames(BaseJob, UpdateDeviceNamesMixin):
+class UpdateDeviceNames(DeviceSelectJobMixin, BaseJob, UpdateDeviceNamesMixin):
     """Update Device Names.
 
     This job will iterate through all devices in the system and update their names
@@ -85,31 +63,8 @@ class UpdateDeviceNames(BaseJob, UpdateDeviceNamesMixin):
     If an existing device name does not include trailing digits, it will be skipped.
     """
 
-    location = ObjectVar(label="Location", model=Location, required=False)
-
-    device_type = ObjectVar(label="Device Type", model=DeviceType, required=False)
-
-    devices = MultiObjectVar(
-        label="Devices",
-        model=Device,
-        query_params={"device_type_id": "$device_type", "location_id": "$location"},
-        required=False,
-    )
-
     class Meta:  # noqa:D106
         has_sensitive_variables = False
-
-    def run(
-        self,
-        log_level: int,
-        location: Location | None,
-        device_type: DeviceType | None,
-        devices: QuerySet[Device] | None,
-    ) -> None:
-        """Execute the job to update device names."""
-        super().run(log_level)
-
-        self.update(location, device_type, devices)
 
 
 name = "Device Utilities"

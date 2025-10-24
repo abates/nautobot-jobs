@@ -2,8 +2,14 @@
 
 import logging
 import textwrap
+from abc import abstractmethod
+from typing import Generic, TypeVar
 
-from nautobot.apps.jobs import ChoiceVar, Job, JobButtonReceiver
+from django.db.models import Model, QuerySet
+from nautobot.apps.jobs import ChoiceVar, Job, JobButtonReceiver, MultiObjectVar, ObjectVar
+from nautobot.dcim.models import Device, DeviceType, Location
+
+from .util import filter_objects
 
 
 class JobDocumentation(type):
@@ -66,3 +72,62 @@ class BaseJobButton(JobButtonReceiver, metaclass=JobDocumentation):
     def receive_job_button(self, obj):
         """Receive a job button click and set the logger to INFO."""
         self.logger.setLevel(logging.INFO)
+
+
+ModelType = TypeVar("ModelType", bound=Model)
+
+
+class UpdateMixin(Generic[ModelType]):
+    """Common code for all jobs that update filterable objects."""
+
+    logger: logging.Logger
+    update_type: type[ModelType]
+
+    @abstractmethod
+    def update_object(self, object: ModelType):
+        """Update an individual object."""
+
+    def update_objects(
+        self,
+        **kwargs,
+    ):
+        """Update a list of objects."""
+        self.logger.info("Starting device component update process...")
+
+        objects: ModelType | QuerySet[ModelType] | None = kwargs.pop("objects", None)
+        if objects is None:
+            objects = self.update_type.objects.all()
+
+        objects = filter_objects(objects, **kwargs)
+        for obj in objects:
+            self.update_object(obj)
+
+
+class DeviceSelectJobMixin:
+    """A mixin that can be used by any job needing to select devices.
+
+    The search constraints for the job include site, device type and
+    individual device selection.
+    """
+
+    location = ObjectVar(label="Location", model=Location, required=False)
+
+    device_type = ObjectVar(label="Device Type", model=DeviceType, required=False)
+
+    devices = MultiObjectVar(
+        label="Devices",
+        model=Device,
+        query_params={"device_type_id": "$device_type", "location_id": "$location"},
+        required=False,
+    )
+
+    def run(
+        self,
+        log_level: int,
+        location: Location | None,
+        device_type: DeviceType | None,
+        devices: QuerySet[Device] | None,
+    ) -> None:
+        """Execute the job to update device names."""
+        super().run(log_level)
+        self.update_objects(objects=devices, location=location, device_type=device_type)

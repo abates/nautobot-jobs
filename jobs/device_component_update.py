@@ -4,16 +4,17 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from operator import attrgetter
-from typing import Iterable, Tuple
+from typing import Tuple
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db.models import Manager, Model
+from django.db.models import Manager, Model, QuerySet
 from nautobot.apps.jobs import Job, MultiObjectVar, ObjectVar, register_jobs
 from nautobot.apps.models import BaseModel
 from nautobot.dcim.models import Device, DeviceType
 from nautobot.extras.models import Status
 
-from .base import BaseJob, BaseJobButton
+from .base import BaseJob, BaseJobButton, UpdateMixin
+from .util import filter_kwargs
 
 
 class FieldUpdate(ABC):
@@ -155,7 +156,7 @@ class TemplateUpdate:
             if field_name not in self.exclude_default_fields:
                 self.fields.insert(0, SimpleFieldUpdate(field_name))
 
-    def update(self, job: Job, device_type: DeviceType, device: Device):
+    def update(self, job: Job, device: Device):
         """Perform the update of the field.
 
         This method will lookup the source templates, specified by the src attribute,
@@ -173,7 +174,7 @@ class TemplateUpdate:
 
             device (Device): The device to be aligned with the device type.
         """
-        src = getattr(device_type, self.src)
+        src = getattr(device.device_type, self.src)
         dst = getattr(device, self.dst)
         for template_obj in src.all():
             key = getattr(template_obj, self.key_field)
@@ -269,20 +270,16 @@ TEMPLATE_UPDATES = [
 ]
 
 
-class UpdateDeviceFromTemplatesMixin:
+class UpdateDeviceFromTemplatesMixin(UpdateMixin[Device]):
     """Common code for both the button receiver and the job entrypoint."""
 
     logger: logging.Logger
 
-    def update_device_type(self, device_type: DeviceType, devices: Iterable[Device] = []):
-        """Update a list of devices so their components match the device type's templates."""
-        if not devices:
-            devices = Device.objects.filter(device_type=device_type)
-        self.logger.info("Updating devices from %s", device_type, extra={"object": device_type})
-        for device in devices:
-            self.logger.info("Updating %s", device, extra={"object": device})
-            for template_update in TEMPLATE_UPDATES:
-                template_update.update(self, device_type, device)  # type: ignore
+    def update_object(self, object: Device):
+        """Update the device components for the device."""
+        self.logger.info("Updating %s", object, extra={"object": object})
+        for template_update in TEMPLATE_UPDATES:
+            template_update.update(self, object)  # type: ignore
 
 
 class DeviceComponentUpdateButton(BaseJobButton, UpdateDeviceFromTemplatesMixin):
@@ -295,10 +292,10 @@ class DeviceComponentUpdateButton(BaseJobButton, UpdateDeviceFromTemplatesMixin)
     class Meta:  # noqa:D106
         has_sensitive_variables = False
 
-    def receive_job_button(self, obj: DeviceType):
+    def receive_job_button(self, obj: DeviceType | Device):
         """Run the job when the button has been pushed."""
         super().receive_job_button(obj)
-        self.update_device_type(obj)
+        self.update_objects(**filter_kwargs(obj, objects=Device, device_type=DeviceType))
 
 
 class DeviceComponentUpdate(BaseJob, UpdateDeviceFromTemplatesMixin):
@@ -311,21 +308,27 @@ class DeviceComponentUpdate(BaseJob, UpdateDeviceFromTemplatesMixin):
     updated. If none are found then new components are created.
     """
 
-    device_type = ObjectVar(label="Device Type", model=DeviceType)
-    devices = MultiObjectVar(
-        label="Devices",
-        model=Device,
-        query_params={"device_type_id": "$device_type"},
-        required=False,
-    )
-
     class Meta:  # noqa:D106
         has_sensitive_variables = False
 
-    def run(self, log_level: str, device_type: DeviceType, devices: Iterable[Device]):
-        """Perform the update for the provided set of devices."""
+    device_type = ObjectVar(label="Device Type", model=DeviceType, required=False)
+
+    devices = MultiObjectVar(
+        label="Devices",
+        model=Device,
+        query_params={"device_type_id": "$device_type", "location_id": "$location"},
+        required=False,
+    )
+
+    def run(
+        self,
+        log_level: int,
+        device_type: DeviceType | None,
+        devices: QuerySet[Device] | None,
+    ) -> None:
+        """Execute the job to update device names."""
         super().run(log_level)
-        self.update_device_type(device_type, devices)
+        self.update_objects(objects=devices, device_type=device_type)
 
 
 name = "Device Utilities"
