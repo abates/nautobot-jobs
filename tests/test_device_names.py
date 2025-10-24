@@ -12,7 +12,7 @@ from nautobot.dcim.models import (
     Location,
 )
 
-from ..device_names import UpdateDeviceNames, UpdateDeviceNamesButton
+from ..jobs.device_names import UpdateDeviceNames, UpdateDeviceNamesButton
 from .fixtures import add_device, add_device_type, add_location, add_location_type, add_role
 
 

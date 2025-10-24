@@ -881,7 +881,7 @@ def check_migrations(context):
 def unittest(  # noqa: PLR0913
     context,
     keepdb=False,
-    label="./jobs",
+    label="./tests",
     failfast=False,
     buffer=True,
     pattern="",

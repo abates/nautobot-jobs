@@ -9,7 +9,7 @@ from nautobot.dcim.models import (
     Device,
 )
 
-from ..port_labels import UpdatePortLabels, UpdatePortLabelsButton
+from ..jobs.port_labels import UpdatePortLabels, UpdatePortLabelsButton
 from .fixtures import (
     add_device,
     add_device_type,

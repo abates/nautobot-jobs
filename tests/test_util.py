@@ -3,7 +3,7 @@
 from django.test import TestCase
 from nautobot.dcim.models import Device
 
-from ..util import filter_objects
+from ..jobs.util import filter_objects
 from .fixtures import add_device, add_device_type, add_location, add_location_type, add_role
 
 

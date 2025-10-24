@@ -12,7 +12,7 @@ from nautobot.dcim.models import (
 )
 from nautobot.extras.models import Status
 
-from ..device_component_update import (
+from ..jobs.device_component_update import (
     RelationshipFieldUpdate,
     SimpleFieldUpdate,
     TemplateUpdate,
