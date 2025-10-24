@@ -44,5 +44,7 @@ def filter_objects(objects: Model | QuerySet[ModelType], **kwargs: Model | Query
     if isinstance(objects, Model):
         filter &= Q(pk=objects.pk)
         objects = objects.__class__.objects  # type: ignore
+    elif len(objects) == 0:
+        objects = objects.model().__class__.objects  # type: ignore
 
     return objects.filter(filter)

@@ -47,3 +47,9 @@ class TestFilterObjects(TestCase):
         want = []
         got = filter_objects(self.device1, location=self.location2)
         self.assertQuerySetEqual(got, want)
+
+    def test_for_default_return_all(self):
+        """Make sure everything is returned for default values."""
+        want = [device for device in Device.objects.all()]
+        got = filter_objects(Device.objects.filter(name=None))
+        self.assertQuerySetEqual(got, want)
